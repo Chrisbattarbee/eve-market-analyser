@@ -1,1 +1,0 @@
-cd eve_market_analyser
