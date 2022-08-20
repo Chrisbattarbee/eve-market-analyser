@@ -15,6 +15,10 @@ struct Args {
     /// The location of the eve api server
     #[clap(short, long, value_parser, default_value = "https://esi.evetech.net/latest")]
     eve_api_location: String,
+
+    /// The location of the https proxy to use with eve analyser
+    #[clap(short, long, value_parser)]
+    https_proxy_location: Option<String>,
 }
 
 #[derive(Subcommand, Debug)]
@@ -73,11 +77,17 @@ async fn process_download_sub_command(download_sub_command: DownloadSubCommand, 
     }
 }
 
-fn generate_api_client_configuration(eve_api_location: String) -> Configuration {
+fn generate_api_client_configuration(eve_api_location: String, https_proxy_location: Option<String>) -> Configuration {
+    let mut client_builder = reqwest::Client::builder();
+    client_builder = match https_proxy_location {
+        None => client_builder,
+        Some(location) => client_builder.proxy(reqwest::Proxy::https(location).expect("Could not build proxy"))
+    };
+
     Configuration {
         base_path: eve_api_location,
         user_agent: Some("eve-market-analyser/0.0.1".to_owned()),
-        client: reqwest::Client::new(),
+        client: client_builder.build().expect("Could not build api client"),
         basic_auth: None,
         oauth_access_token: None,
         bearer_access_token: None,
@@ -89,7 +99,7 @@ fn generate_api_client_configuration(eve_api_location: String) -> Configuration 
 async fn main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     // This is where we will setup our HTTP client requests.
     let args = Args::parse();
-    let configuration = generate_api_client_configuration(args.eve_api_location);
+    let configuration = generate_api_client_configuration(args.eve_api_location, args.https_proxy_location);
     process_sub_commands(args.sub_command, configuration).await;
     Ok(())
 }
