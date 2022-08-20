@@ -1,10 +1,11 @@
 # GetFwLeaderboardsCorporationsActiveTotalActiveTotal1
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**amount** | **i32** | Amount of victory points | [optional] [default to null]
-**corporation_id** | **i32** | corporation_id integer | [optional] [default to null]
+**amount** | Option<**i32**> | Amount of victory points | [optional]
+**corporation_id** | Option<**i32**> | corporation_id integer | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

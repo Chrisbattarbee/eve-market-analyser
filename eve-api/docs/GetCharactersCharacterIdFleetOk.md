@@ -1,12 +1,13 @@
 # GetCharactersCharacterIdFleetOk
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**fleet_id** | **i64** | The character&#39;s current fleet ID | [default to null]
-**role** | **String** | Member’s role in fleet | [default to null]
-**squad_id** | **i64** | ID of the squad the member is in. If not applicable, will be set to -1 | [default to null]
-**wing_id** | **i64** | ID of the wing the member is in. If not applicable, will be set to -1 | [default to null]
+**fleet_id** | **i64** | The character's current fleet ID | 
+**role** | **String** | Member’s role in fleet | 
+**squad_id** | **i64** | ID of the squad the member is in. If not applicable, will be set to -1 | 
+**wing_id** | **i64** | ID of the wing the member is in. If not applicable, will be set to -1 | 
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

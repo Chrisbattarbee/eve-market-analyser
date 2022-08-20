@@ -1,9 +1,10 @@
 # GetMarketsRegionIdOrdersUnprocessableEntity
 
 ## Properties
+
 Name | Type | Description | Notes
 ------------ | ------------- | ------------- | -------------
-**error** | **String** | Unprocessable entity message | [optional] [default to null]
+**error** | Option<**String**> | Unprocessable entity message | [optional]
 
 [[Back to Model list]](../README.md#documentation-for-models) [[Back to API list]](../README.md#documentation-for-api-endpoints) [[Back to README]](../README.md)
 

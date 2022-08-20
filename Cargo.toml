@@ -2,5 +2,5 @@
 
 members = [
     "eve-api",
-    "cli"
+    "eve_market_analyser"
 ]

@@ -1,113 +1,94 @@
-use hyper;
-use serde;
-use serde_json;
+use std::error;
+use std::fmt;
+
+#[derive(Debug, Clone)]
+pub struct ResponseContent<T> {
+    pub status: reqwest::StatusCode,
+    pub content: String,
+    pub entity: Option<T>,
+}
 
 #[derive(Debug)]
 pub enum Error<T> {
-    Hyper(hyper::Error),
+    Reqwest(reqwest::Error),
     Serde(serde_json::Error),
-    ApiError(ApiError<T>),
+    Io(std::io::Error),
+    ResponseError(ResponseContent<T>),
 }
 
-#[derive(Debug)]
-pub struct ApiError<T> {
-    pub code: hyper::StatusCode,
-    pub content: Option<T>,
-}
-
-impl<'de, T> From<(hyper::StatusCode, &'de [u8])> for Error<T> 
-    where T: serde::Deserialize<'de> {
-    fn from(e: (hyper::StatusCode, &'de [u8])) -> Self {
-        if e.1.len() == 0 {
-            return Error::ApiError(ApiError{
-                code: e.0,
-                content: None,
-            });
-        }
-        match serde_json::from_slice::<T>(e.1) {
-            Ok(t) => Error::ApiError(ApiError{
-                code: e.0,
-                content: Some(t),
-            }),
-            Err(e) => {
-                Error::from(e)
-            }
-        }
+impl <T> fmt::Display for Error<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let (module, e) = match self {
+            Error::Reqwest(e) => ("reqwest", e.to_string()),
+            Error::Serde(e) => ("serde", e.to_string()),
+            Error::Io(e) => ("IO", e.to_string()),
+            Error::ResponseError(e) => ("response", format!("status code {}", e.status)),
+        };
+        write!(f, "error in {}: {}", module, e)
     }
 }
 
-impl<T> From<hyper::Error> for Error<T> {
-    fn from(e: hyper::Error) -> Self {
-        return Error::Hyper(e)
+impl <T: fmt::Debug> error::Error for Error<T> {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        Some(match self {
+            Error::Reqwest(e) => e,
+            Error::Serde(e) => e,
+            Error::Io(e) => e,
+            Error::ResponseError(_) => return None,
+        })
     }
 }
 
-impl<T> From<serde_json::Error> for Error<T> {
+impl <T> From<reqwest::Error> for Error<T> {
+    fn from(e: reqwest::Error) -> Self {
+        Error::Reqwest(e)
+    }
+}
+
+impl <T> From<serde_json::Error> for Error<T> {
     fn from(e: serde_json::Error) -> Self {
-        return Error::Serde(e)
+        Error::Serde(e)
     }
 }
 
-use super::models::*;
+impl <T> From<std::io::Error> for Error<T> {
+    fn from(e: std::io::Error) -> Self {
+        Error::Io(e)
+    }
+}
 
-mod alliance_api;
-pub use self::alliance_api::{ AllianceApi, AllianceApiClient };
-mod assets_api;
-pub use self::assets_api::{ AssetsApi, AssetsApiClient };
-mod bookmarks_api;
-pub use self::bookmarks_api::{ BookmarksApi, BookmarksApiClient };
-mod calendar_api;
-pub use self::calendar_api::{ CalendarApi, CalendarApiClient };
-mod character_api;
-pub use self::character_api::{ CharacterApi, CharacterApiClient };
-mod clones_api;
-pub use self::clones_api::{ ClonesApi, ClonesApiClient };
-mod contracts_api;
-pub use self::contracts_api::{ ContractsApi, ContractsApiClient };
-mod corporation_api;
-pub use self::corporation_api::{ CorporationApi, CorporationApiClient };
-mod dogma_api;
-pub use self::dogma_api::{ DogmaApi, DogmaApiClient };
-mod faction_warfare_api;
-pub use self::faction_warfare_api::{ FactionWarfareApi, FactionWarfareApiClient };
-mod fittings_api;
-pub use self::fittings_api::{ FittingsApi, FittingsApiClient };
-mod fleets_api;
-pub use self::fleets_api::{ FleetsApi, FleetsApiClient };
-mod incursions_api;
-pub use self::incursions_api::{ IncursionsApi, IncursionsApiClient };
-mod industry_api;
-pub use self::industry_api::{ IndustryApi, IndustryApiClient };
-mod insurance_api;
-pub use self::insurance_api::{ InsuranceApi, InsuranceApiClient };
-mod killmails_api;
-pub use self::killmails_api::{ KillmailsApi, KillmailsApiClient };
-mod location_api;
-pub use self::location_api::{ LocationApi, LocationApiClient };
-mod loyalty_api;
-pub use self::loyalty_api::{ LoyaltyApi, LoyaltyApiClient };
-mod market_api;
-pub use self::market_api::{ MarketApi, MarketApiClient };
-mod opportunities_api;
-pub use self::opportunities_api::{ OpportunitiesApi, OpportunitiesApiClient };
-mod planetary_interaction_api;
-pub use self::planetary_interaction_api::{ PlanetaryInteractionApi, PlanetaryInteractionApiClient };
-mod search_api;
-pub use self::search_api::{ SearchApi, SearchApiClient };
-mod skills_api;
-pub use self::skills_api::{ SkillsApi, SkillsApiClient };
-mod sovereignty_api;
-pub use self::sovereignty_api::{ SovereigntyApi, SovereigntyApiClient };
-mod status_api;
-pub use self::status_api::{ StatusApi, StatusApiClient };
-mod universe_api;
-pub use self::universe_api::{ UniverseApi, UniverseApiClient };
-mod user_interface_api;
-pub use self::user_interface_api::{ UserInterfaceApi, UserInterfaceApiClient };
-mod wallet_api;
-pub use self::wallet_api::{ WalletApi, WalletApiClient };
-mod wars_api;
-pub use self::wars_api::{ WarsApi, WarsApiClient };
+pub fn urlencode<T: AsRef<str>>(s: T) -> String {
+    ::url::form_urlencoded::byte_serialize(s.as_ref().as_bytes()).collect()
+}
+
+pub mod alliance_api;
+pub mod assets_api;
+pub mod bookmarks_api;
+pub mod calendar_api;
+pub mod character_api;
+pub mod clones_api;
+pub mod contracts_api;
+pub mod dogma_api;
+pub mod faction_warfare_api;
+pub mod fittings_api;
+pub mod fleets_api;
+pub mod incursions_api;
+pub mod industry_api;
+pub mod insurance_api;
+pub mod killmails_api;
+pub mod location_api;
+pub mod loyalty_api;
+pub mod mail_api;
+pub mod market_api;
+pub mod opportunities_api;
+pub mod planetary_interaction_api;
+pub mod search_api;
+pub mod skills_api;
+pub mod sovereignty_api;
+pub mod status_api;
+pub mod universe_api;
+pub mod user_interface_api;
+pub mod wallet_api;
+pub mod wars_api;
 
 pub mod configuration;
-pub mod client;
