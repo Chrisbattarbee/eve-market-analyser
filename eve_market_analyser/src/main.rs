@@ -1,6 +1,9 @@
+extern crate core;
+
 use clap::Parser;
 use clap::Subcommand;
 use eve_api::apis::configuration::Configuration;
+use eve_api::apis::market_api::{get_markets_region_id_types};
 
 /// Interact with Eve Online Market APIs
 #[derive(Parser, Debug)]
@@ -45,8 +48,26 @@ async fn process_sub_commands(args: SubCommands, configuration: Configuration) {
 async fn process_download_sub_command(download_sub_command: DownloadSubCommand, configuration: Configuration) {
     match download_sub_command {
         DownloadSubCommand::MarketItems { region_code } => {
-            let first_page_items = eve_api::apis::market_api::get_markets_region_id_types(&configuration, region_code, None, None, None).await.unwrap();
-            println!("You want to download data from {:?}", first_page_items)
+            let mut all_items = Vec::new();
+            let mut page_number = None;
+            loop {
+                match get_markets_region_id_types(&configuration, region_code, None, None, page_number).await {
+                    Ok(items) => {
+                        let len = items.len();
+                        items.into_iter().for_each(|item| all_items.push(item));
+                        page_number = match page_number {
+                            None => Some(2),
+                            Some(x) => Some(x + 1),
+                        };
+                        match len {
+                            1000 => {}
+                            _ => break,
+                        }
+                    }
+                    Err(e) => panic!("HTTP request failed {}", e)
+                }
+            }
+            println!("Items in region {}: {:?}", region_code, all_items);
         }
     }
 }
