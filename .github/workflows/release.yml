@@ -17,5 +17,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          PRE_BUILD: "pre_build.sh"
           RUSTTARGET: ${{ matrix.target }}
           MINIFY: true
