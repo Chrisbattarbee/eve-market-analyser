@@ -2,7 +2,9 @@
 name = "eve_market_analyser"
 version = "0.1.0"
 edition = "2021"
+authors = ["Chris Battarbee chris@chrisbattarbee.com"]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+clap = { version = "3.2.17", features = ["derive"] }
