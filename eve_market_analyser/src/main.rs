@@ -60,6 +60,7 @@ async fn process_download_sub_command(download_sub_command: DownloadSubCommand, 
                             Some(x) => Some(x + 1),
                         };
                         match len {
+                            // API always returns pages of 1000, if we attempt to get a page after this it throws an internal error
                             1000 => {}
                             _ => break,
                         }
