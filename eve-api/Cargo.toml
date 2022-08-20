@@ -1,7 +1,8 @@
 [package]
-name = "swagger"
+name = "eve-api"
 version = "1.0.0"
 authors = ["Swagger Codegen team and contributors"]
+
 
 [dependencies]
 serde = "1.0"

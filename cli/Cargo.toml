@@ -8,3 +8,4 @@ authors = ["Chris Battarbee chris@chrisbattarbee.com"]
 
 [dependencies]
 clap = { version = "3.2.17", features = ["derive"] }
+eve-api = { path = "../eve-api" }
